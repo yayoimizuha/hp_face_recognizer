@@ -58,6 +58,10 @@ const plane = (p) => {
         }
         //p.circle(p.mouseX, p.mouseY, 20);
     };
+    p.mouseClicked = () => {
+        console.log(p.mouseX);
+        console.log(p.mouseY);
+    }
 };
 
 const face_rect = (p, data) => {
@@ -66,19 +70,27 @@ const face_rect = (p, data) => {
     p.strokeWeight(3);
     let face_group = new p.Group();
     data.faces.forEach((elm) => {
-        console.log(elm.bbox);
+        //console.log(elm.bbox);
+        console.log(Object.keys(elm.pred.stat)[0])
 
         b = elm.bbox;
         let angle = elm.rotate;
-        console.log(angle);
+        //console.log(angle);
         p.stroke(p.color("red"));
         //p.fill(p.color('transparent'));
         let sp = new p.Sprite(b[0] + (b[2] - b[0]) / 2, b[1] + (b[3] - b[1]) / 2, b[2] - b[0], b[3] - b[1], 'static');
         sp.rotation = 360 * angle / (2 * Math.PI);
         //sp.color = 'transparent';
         sp.color.setAlpha(0);
-        sp.onMouseOver = function () {
-            console.log("pressed!!");
+        if (Object.keys(elm.pred.stat)[0] === "success") {
+            sp.textSize = 20;
+            sp.text = Object.keys(elm.pred[0])[0]
+        }
+        sp.onMousePressed = (event) => {
+            console.log("pressed!!", event);
+        }
+        sp.mousePressed = (a) => {
+            console.log("pressed!!", a);
         }
         face_group.add(sp);
 
