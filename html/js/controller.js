@@ -32,6 +32,7 @@ const plane = (p) => {
     p.preload = () => {
         img = p.loadImage(URL.createObjectURL(_input.files[0]));
     }
+    let face_group;
     p.setup = () => {
         p.frameRate(4);
         p.noLoop();
@@ -45,10 +46,16 @@ const plane = (p) => {
         console.log(scale);
         console.log(img.width, img.height);
         p.image(img, 0, 0);
-        if (recognition_data !== undefined) face_rect(p, recognition_data);
+        if (recognition_data !== undefined) {
+            face_group = face_rect(p, recognition_data);
+            console.log(face_group);
+        }
         p.loop();
     };
     p.draw = () => {
+        if (face_group !== undefined) {
+            face_group.draw();
+        }
         //p.circle(p.mouseX, p.mouseY, 20);
     };
 };
@@ -57,6 +64,7 @@ const face_rect = (p, data) => {
     if (data.count === 0) return;
     p.noFill();
     p.strokeWeight(3);
+    let face_group = new p.Group();
     data.faces.forEach((elm) => {
         console.log(elm.bbox);
 
@@ -64,11 +72,15 @@ const face_rect = (p, data) => {
         let angle = elm.rotate;
         console.log(angle);
         p.stroke(p.color("red"));
-        p.fill(p.color('transparent'));
+        //p.fill(p.color('transparent'));
         let sp = new p.Sprite(b[0] + (b[2] - b[0]) / 2, b[1] + (b[3] - b[1]) / 2, b[2] - b[0], b[3] - b[1], 'static');
         sp.rotation = 360 * angle / (2 * Math.PI);
-        sp.color = 'transparent';
-        sp.shapeColor.setAlpha(0);
+        //sp.color = 'transparent';
+        sp.color.setAlpha(0);
+        sp.onMouseOver = function () {
+            console.log("pressed!!");
+        }
+        face_group.add(sp);
 
         //p.push();
         //p.translate(b[0] + (b[2] - b[0]) / 2, b[1] + (b[3] - b[1]) / 2);
@@ -76,6 +88,7 @@ const face_rect = (p, data) => {
         //p.rect(-(b[2] - b[0]) / 2, -(b[3] - b[1]) / 2, b[2] - b[0], b[3] - b[1]);
         //p.pop();
     })
+    return face_group;
 }
 
 let resize_timer;
@@ -90,3 +103,7 @@ window.addEventListener('resize', () => {
     resize_timer = setTimeout(canvas_resize, 600);
     console.log("resized");
 });
+
+function predict_view(content) {
+    document.getElementById("predict_content").innerText = content;
+}
