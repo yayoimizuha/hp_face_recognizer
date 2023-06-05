@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hello!Project Idol Face Recognizer</title>
+    <script src="./js/uikit.js"></script>
+    <script src="./js/uikit-icons.js"></script>
+    <script src="./js/p5/p5.js"></script>
+    <script src="./js/p5/p5play-3.8.13/planck.min.js"></script>
+    <script src="./js/p5/p5play-3.8.13/p5play.js"></script>
+    <script src="./js/controller.js"></script>
+    <link href="./css/uikit.css" rel="stylesheet">
+</head>
+<body>
+<div class="uk-child-width-1-1@l uk-padding" uk-grid>
+    <div>
+        <h3>
+            顔認識アプリ
+        </h3>
+        <p>
+            RetinaFaceとファインチューニング済みFaceNetによる顔認識アプリです。<br>
+            アップロードされた画像は処理が終了した時点で破棄されます。<br>
+            間違った顔認識の指摘ボタンを押すと、サーバーに保存されるのでご注意ください。
+        </p>
+    </div>
+    <div class="uk-margin">
+        <div class="js-upload uk-placeholder uk-text-center uk-width-expand" uk-form-custom
+             style="background-color: #cfcfcf">
+            <input type="file" id="image_selector" onchange="image_reflector(this)">
+            <span uk-icon="icon: cloud-upload"></span>
+            <span class="uk-text-middle">画像ファイルをドロップ、またはクリックして選択。</span>
+        </div>
+    </div>
+    <div class="uk-margin">
+        <div class="uk-section uk-section-muted">
+            <div class="uk-container">
+                <h3 id="wid">画像</h3>
+                <div class="uk-grid-match uk-child-width-1-1@s" uk-grid>
+                    <div id="canvas_div">
+                        <div id="image_canvas" style="margin: auto"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,6 +1,6 @@
 from io import BytesIO
-from retinaface.pre_trained_models import get_model
 from fastapi import FastAPI, File, UploadFile, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import PlainTextResponse
 from recog import retinaface, facenet_predict
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -41,3 +41,6 @@ async def wrong_report(request: Request, file: UploadFile = File()):
             file=join(getcwd(), 'wrong_images', f'{request.client.host}_{datetime.now().timestamp()}_{file.filename}'),
             mode='wb') as f:
         await f.write(await file.read())
+
+
+app.mount("/hp-face-recognizer", StaticFiles(directory=join(getcwd(), 'html'), html=True), name="html")
