@@ -4,5 +4,9 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="jdk" jdkName="Pipenv (ml-on-browser)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="p5" level="application" />
+    <orderEntry type="library" name="planck" level="application" />
+    <orderEntry type="library" name="p5play" level="application" />
+    <orderEntry type="library" name="uikit" level="application" />
   </component>
 </module>

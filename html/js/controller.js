@@ -21,8 +21,8 @@ const send_predict = (image) => {
         method: 'POST', body: file_descriptor
     }).then(response => response.json()).then(data => {
         recognition_data = data;
-        new p5(plane, "image_canvas");
         console.log(data);
+        new p5(plane, "image_canvas");
     }).catch((error) => {
         console.error(error)
     })
@@ -78,17 +78,17 @@ const plane = (p) => {
     };
     p.draw = () => {
         clicked--;
-        if (clicked === 0) {
+        if (-10 < clicked && clicked < 0) {
             face_group.forEach(sp => {
                 sp.stroke = 'red';
+
             })
         }
 
     };
     p.mouseClicked = () => {
-        if ((0 <= p.mouseX && p.mouseX <= p.width) && (0 <= p.mouseY && p.mouseY <= p.height)) {
-            //console.log("in canvas");
-            //console.log(p.mouseX, p.mouseY);
+        if ((0 <= p.mouseX && p.mouseX <= p.width) && (0 <= p.mouseY && p.mouseY <= p.height) &&
+            face_group.length === recognition_data.faces.length) {
             const euclid = face_group.map(sp => {
                 return Math.sqrt(Math.pow(sp.position.x - p.mouseX, 2) + Math.pow(sp.position.y - p.mouseY, 2))
             })
@@ -97,7 +97,10 @@ const plane = (p) => {
             })
             //console.log(euclid, dist);
             for (let i = 0; i < face_group.length; i++) {
+                console.log(face_group.length, recognition_data.faces.length);
                 if (euclid[i] < dist[i]) {
+                    console.log(i);
+
                     console.log(recognition_data.faces[i].pred);
                     predict_view(recognition_data.faces[i].pred);
                     face_group[i].stroke = p.color('blue');
