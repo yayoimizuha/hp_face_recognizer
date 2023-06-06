@@ -4,11 +4,16 @@ from numpy import pi, sqrt
 from PIL import Image
 from numpy import asarray, array, arctan2
 from retinaface.pre_trained_models import get_model
+from torch.cuda import is_available
 from torchvision.transforms.functional import to_tensor
-from torch import stack, load, no_grad, topk
+from torch import stack, load, no_grad, topk, device
 from torch.nn import Module, Sequential, Softmax
 
-retinaface_model = get_model("resnet50_2020-07-20", max_size=512)
+dev = device(device='cuda') if is_available() else device(device='cpu')
+print(f'device: {dev}')
+
+
+retinaface_model = get_model("resnet50_2020-07-20", max_size=512, device=dev)
 retinaface_model.eval()
 
 
@@ -83,7 +88,7 @@ def facenet_predict(res: list[dict], image: BytesIO):
             continue
         cropped_tensor = to_tensor(cropped_face).unsqueeze(0)
 
-        predict = topk(facenet_model(cropped_tensor), dim=1, k=5)
+        predict = topk(facenet_model(cropped_tensor.to(dev)).to(device(device='cpu')), dim=1, k=5)
         for rank, (value, index) in enumerate(zip(predict.values[0].tolist(), predict.indices[0].tolist())):
             face['pred']['stat'] = {'success': ''}
             face['pred'][rank] = {class_text(index): value}
