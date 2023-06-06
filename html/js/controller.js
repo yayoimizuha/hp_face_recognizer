@@ -9,6 +9,7 @@ function image_reflector(input) {
     _input = input;
     document.getElementById("image_canvas").innerHTML = "";
     send_predict(input.files[0]);
+    document.getElementById("predict_content").innerText = "";
 
 }
 
@@ -27,15 +28,15 @@ const send_predict = (image) => {
     })
 };
 
+let clicked = 0;
 const plane = (p) => {
     let img;
     p.preload = () => {
         img = p.loadImage(URL.createObjectURL(_input.files[0]));
     }
-    let face_group;
+    let face_group = [];
     p.setup = () => {
         p.frameRate(4);
-        p.noLoop();
         let cnv = p.createCanvas(img.width, img.height);
         let real_width = document.getElementById("wid").clientWidth;
         real_width = Math.min(real_width, 1000);
@@ -47,61 +48,65 @@ const plane = (p) => {
         console.log(img.width, img.height);
         p.image(img, 0, 0);
         if (recognition_data !== undefined) {
-            face_group = face_rect(p, recognition_data);
-            console.log(face_group);
+            if (recognition_data.count === 0) return;
+            p.noFill();
+            p.strokeWeight(3);
+            recognition_data.faces.forEach((elm) => {
+                //console.log(elm.bbox);
+                console.log(Object.keys(elm.pred.stat)[0])
+
+                b = elm.bbox;
+                let angle = elm.rotate;
+                //console.log(angle);
+                p.stroke(p.color("red"));
+                //p.fill(p.color('transparent'));
+                let sp = new p.Sprite(b[0] + (b[2] - b[0]) / 2, b[1] + (b[3] - b[1]) / 2, b[2] - b[0], b[3] - b[1], 'static');
+                sp.rotation = 360 * angle / (2 * Math.PI);
+                //sp.color = 'transparent';
+
+                sp.color.setAlpha(0);
+                if (Object.keys(elm.pred.stat)[0] === "success") {
+                    sp.textSize = 20;
+                    //sp.text = Object.keys(elm.pred[0])[0]
+                }
+                face_group.push(sp);
+
+            })
+
         }
-        p.loop();
+        //p.noLoop();
     };
     p.draw = () => {
-        if (face_group !== undefined) {
-            face_group.draw();
+        clicked--;
+        if (clicked === 0) {
+            face_group.forEach(sp => {
+                sp.stroke = 'red';
+            })
         }
-        //p.circle(p.mouseX, p.mouseY, 20);
+
     };
     p.mouseClicked = () => {
-        console.log(p.mouseX);
-        console.log(p.mouseY);
+        if ((0 <= p.mouseX && p.mouseX <= p.width) && (0 <= p.mouseY && p.mouseY <= p.height)) {
+            //console.log("in canvas");
+            //console.log(p.mouseX, p.mouseY);
+            const euclid = face_group.map(sp => {
+                return Math.sqrt(Math.pow(sp.position.x - p.mouseX, 2) + Math.pow(sp.position.y - p.mouseY, 2))
+            })
+            const dist = face_group.map(sp => {
+                return Math.sqrt(Math.pow(sp.width / 2, 2) + Math.pow(sp.height / 2, 2))
+            })
+            //console.log(euclid, dist);
+            for (let i = 0; i < face_group.length; i++) {
+                if (euclid[i] < dist[i]) {
+                    console.log(recognition_data.faces[i].pred);
+                    predict_view(recognition_data.faces[i].pred);
+                    face_group[i].stroke = p.color('blue');
+                    clicked = 4;
+                }
+            }
+        }
     }
 };
-
-const face_rect = (p, data) => {
-    if (data.count === 0) return;
-    p.noFill();
-    p.strokeWeight(3);
-    let face_group = new p.Group();
-    data.faces.forEach((elm) => {
-        //console.log(elm.bbox);
-        console.log(Object.keys(elm.pred.stat)[0])
-
-        b = elm.bbox;
-        let angle = elm.rotate;
-        //console.log(angle);
-        p.stroke(p.color("red"));
-        //p.fill(p.color('transparent'));
-        let sp = new p.Sprite(b[0] + (b[2] - b[0]) / 2, b[1] + (b[3] - b[1]) / 2, b[2] - b[0], b[3] - b[1], 'static');
-        sp.rotation = 360 * angle / (2 * Math.PI);
-        //sp.color = 'transparent';
-        sp.color.setAlpha(0);
-        if (Object.keys(elm.pred.stat)[0] === "success") {
-            sp.textSize = 20;
-            sp.text = Object.keys(elm.pred[0])[0]
-        }
-        sp.onMousePressed = (event) => {
-            console.log("pressed!!", event);
-        }
-        sp.mousePressed = (a) => {
-            console.log("pressed!!", a);
-        }
-        face_group.add(sp);
-
-        //p.push();
-        //p.translate(b[0] + (b[2] - b[0]) / 2, b[1] + (b[3] - b[1]) / 2);
-        //p.rotate(360 * angle / (2 * Math.PI));
-        //p.rect(-(b[2] - b[0]) / 2, -(b[3] - b[1]) / 2, b[2] - b[0], b[3] - b[1]);
-        //p.pop();
-    })
-    return face_group;
-}
 
 let resize_timer;
 
@@ -117,5 +122,15 @@ window.addEventListener('resize', () => {
 });
 
 function predict_view(content) {
-    document.getElementById("predict_content").innerText = content;
+    document.getElementById("predict_content").innerText = "";
+    if (Object.keys(content.stat)[0] === "success") {
+        for (const [k, v] of Object.entries(content)) {
+            if (k === "stat") continue;
+            let person = Object.keys(v)[0];
+            let proba = Object.values(v)[0];
+            document.getElementById("predict_content").innerText += `${parseInt(k) + 1}位:${person}  ${(proba * 100).toFixed(2)}%\n`;
+        }
+    } else if (Object.keys(content.stat)[0] === "invalid") {
+        document.getElementById("predict_content").innerText = content.stat.invalid;
+    }
 }
