@@ -64,7 +64,7 @@ def truncate(landmark: list[tuple[float]]) -> tuple[tuple[int, int], float]:
     return (int(center_x), int(center_y)), arctan2(eye_center[0] - mouth_center[0], mouth_center[1] - eye_center[1])
 
 
-facenet_model: Module = Sequential(load(f='model.pth'), Softmax(dim=1))
+facenet_model: Module = Sequential(load(f='model.pth'), Softmax(dim=1)).to(dev)
 facenet_model.eval()
 
 
