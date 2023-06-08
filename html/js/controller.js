@@ -8,6 +8,10 @@ function image_reflector(input) {
     image.src = URL.createObjectURL(input.files[0]);
     _input = input;
     document.getElementById("image_canvas").innerHTML = "";
+    document.getElementById("canvas_second").innerHTML = "";
+    const canvas_element = document.createElement('canvas');
+    canvas_element.id = "canvas__second"
+    document.getElementById("canvas_second").appendChild(canvas_element);
     send_predict(input.files[0]);
     document.getElementById("predict_content").innerText = "";
 
@@ -22,107 +26,11 @@ const send_predict = (image) => {
     }).then(response => response.json()).then(data => {
         recognition_data = data;
         console.log(data);
-        new p5(plane, "image_canvas");
+        fab_js(data, URL.createObjectURL(image));
     }).catch((error) => {
         console.error(error)
     })
 };
-
-let clicked = 0;
-const plane = (p) => {
-    let img;
-    p.preload = () => {
-        img = p.loadImage(URL.createObjectURL(_input.files[0]));
-    }
-    let face_group = [];
-    p.setup = () => {
-        p.frameRate(4);
-        let cnv = p.createCanvas(img.width, img.height);
-        let real_width = document.getElementById("wid").clientWidth;
-        real_width = Math.min(real_width, 1000);
-        let scale = real_width / img.width;
-        cnv.style('height', img.height * scale + 'px');
-        cnv.style('width', real_width + 'px');
-        cnv.style('margin', 'auto');
-        console.log(scale);
-        console.log(img.width, img.height);
-        p.image(img, 0, 0);
-        if (recognition_data !== undefined) {
-            if (recognition_data.count === 0) return;
-            p.noFill();
-            p.strokeWeight(3);
-            recognition_data.faces.forEach((elm) => {
-                //console.log(elm.bbox);
-                console.log(Object.keys(elm.pred.stat)[0])
-
-                b = elm.bbox;
-                let angle = elm.rotate;
-                //console.log(angle);
-                p.stroke(p.color("red"));
-                //p.fill(p.color('transparent'));
-                let sp = new p.Sprite(b[0] + (b[2] - b[0]) / 2, b[1] + (b[3] - b[1]) / 2, b[2] - b[0], b[3] - b[1], 'static');
-                sp.rotation = 360 * angle / (2 * Math.PI);
-                //sp.color = 'transparent';
-
-                sp.color.setAlpha(0);
-                if (Object.keys(elm.pred.stat)[0] === "success") {
-                    sp.textSize = 20;
-                    //sp.text = Object.keys(elm.pred[0])[0]
-                }
-                face_group.push(sp);
-
-            })
-
-        }
-        //p.noLoop();
-    };
-    p.draw = () => {
-        clicked--;
-        if (-10 < clicked && clicked < 0) {
-            face_group.forEach(sp => {
-                sp.stroke = 'red';
-
-            })
-        }
-
-    };
-    p.mouseClicked = () => {
-        if ((0 <= p.mouseX && p.mouseX <= p.width) && (0 <= p.mouseY && p.mouseY <= p.height) &&
-            face_group.length === recognition_data.faces.length) {
-            const euclid = face_group.map(sp => {
-                return Math.sqrt(Math.pow(sp.position.x - p.mouseX, 2) + Math.pow(sp.position.y - p.mouseY, 2))
-            })
-            const dist = face_group.map(sp => {
-                return Math.sqrt(Math.pow(sp.width / 2, 2) + Math.pow(sp.height / 2, 2))
-            })
-            //console.log(euclid, dist);
-            for (let i = 0; i < face_group.length; i++) {
-                console.log(face_group.length, recognition_data.faces.length);
-                if (euclid[i] < dist[i]) {
-                    console.log(i);
-
-                    console.log(recognition_data.faces[i].pred);
-                    predict_view(recognition_data.faces[i].pred);
-                    face_group[i].stroke = p.color('blue');
-                    clicked = 4;
-                }
-            }
-        }
-    }
-};
-
-let resize_timer;
-
-function canvas_resize() {
-    document.getElementById("image_canvas").innerHTML = "";
-    new p5(plane, "image_canvas");
-}
-
-window.addEventListener('resize', () => {
-    clearTimeout(resize_timer);
-    resize_timer = setTimeout(canvas_resize, 600);
-    console.log("resized");
-});
 
 function predict_view(content) {
     document.getElementById("predict_content").innerText = "";
@@ -136,4 +44,73 @@ function predict_view(content) {
     } else if (Object.keys(content.stat)[0] === "invalid") {
         document.getElementById("predict_content").innerText = content.stat.invalid;
     }
+}
+
+let resize_timer;
+
+const fab_js = (data, img) => {
+    let image = new Image();
+    image.src = img;
+    let disp_width, disp_height;
+    if (document.getElementById('wid').clientWidth < image.naturalWidth) {
+        disp_width = document.getElementById('wid').clientWidth;
+        disp_height = disp_width * (image.naturalHeight / image.naturalWidth);
+    } else {
+        disp_width = image.naturalWidth;
+        disp_height = image.naturalHeight;
+    }
+    const resizeCanvas = (canvas, max_width) => {
+        const real_width = Math.min(document.getElementById('wid').clientWidth, max_width);
+        const ratio = canvas.getWidth() / canvas.getHeight();
+        const scale = real_width / canvas.getWidth();
+        const zoom = canvas.getZoom() * scale;
+        canvas.setDimensions({
+            width: real_width, height: real_width / ratio
+        });
+        canvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0]);
+        canvas.renderAll();
+        console.log("resized!");
+    }
+
+
+    console.log(disp_width, disp_height);
+    const canvas = new fabric.Canvas("canvas__second", {selection: false});
+    window.addEventListener('resize', () => {
+        clearTimeout(resize_timer);
+        resize_timer = setTimeout(() => {
+            //resizeCanvas(canvas, image.naturalWidth);
+        }, 100);
+    });
+    canvas.setBackgroundImage(img, (e) => {
+        canvas.setDimensions({
+            width: e.width,
+            height: e.height
+        });
+        resizeCanvas(canvas, image.naturalWidth);
+        canvas.renderAll()
+    });
+    if (data.count === 0) {
+        console.log("no faces");
+    } else {
+        data.faces.forEach((item) => {
+            console.log(item);
+            const conf = {
+                originX: "center",
+                originY: "center",
+                left: (item.bbox[0] + item.bbox[2]) / 2,
+                top: (item.bbox[1] + item.bbox[3]) / 2,
+                width: item.bbox[2] - item.bbox[0],
+                height: item.bbox[3] - item.bbox[1],
+                fill: 'rgba(0,0,0,0)',
+                strokeWidth: 3,
+                stroke: 'rgba(255,0,0,1)',
+                angle: 360 * item.rotate / (Math.PI * 2)
+            }
+            console.log(conf);
+            const faceRect = new fabric.Rect(conf);
+            canvas.add(faceRect);
+            console.log("here1");
+        })
+    }
+    canvas.renderAll();
 }
