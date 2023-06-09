@@ -48,6 +48,7 @@ function predict_view(content) {
 
 let resize_timer;
 
+
 const fab_js = (data, img) => {
     let image = new Image();
     image.src = img;
@@ -78,13 +79,12 @@ const fab_js = (data, img) => {
     window.addEventListener('resize', () => {
         clearTimeout(resize_timer);
         resize_timer = setTimeout(() => {
-            //resizeCanvas(canvas, image.naturalWidth);
+            resizeCanvas(canvas, image.naturalWidth);
         }, 100);
     });
     canvas.setBackgroundImage(img, (e) => {
         canvas.setDimensions({
-            width: e.width,
-            height: e.height
+            width: e.width, height: e.height
         });
         resizeCanvas(canvas, image.naturalWidth);
         canvas.renderAll()
@@ -92,9 +92,11 @@ const fab_js = (data, img) => {
     if (data.count === 0) {
         console.log("no faces");
     } else {
+        let item_order = 0;
         data.faces.forEach((item) => {
-            console.log(item);
+            //console.log(item);
             const conf = {
+                id: item_order,
                 originX: "center",
                 originY: "center",
                 left: (item.bbox[0] + item.bbox[2]) / 2,
@@ -104,12 +106,24 @@ const fab_js = (data, img) => {
                 fill: 'rgba(0,0,0,0)',
                 strokeWidth: 3,
                 stroke: 'rgba(255,0,0,1)',
-                angle: 360 * item.rotate / (Math.PI * 2)
+                angle: 360 * item.rotate / (Math.PI * 2),
+                hasControls: false,
+                lockMovementY: true,
+                lockMovementX: true,
+                borderScaleFactor: 6
             }
-            console.log(conf);
+            item_order++;
+            //console.log(conf);
             const faceRect = new fabric.Rect(conf);
             canvas.add(faceRect);
-            console.log("here1");
+
+            canvas.on({
+                'selection:updated': (x) => {
+                    predict_view(data.faces[x.selected[0].id].pred);
+                }, 'selection:created': (x) => {
+                    predict_view(data.faces[x.selected[0].id].pred);
+                }
+            })
         })
     }
     canvas.renderAll();
