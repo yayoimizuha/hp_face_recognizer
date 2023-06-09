@@ -22,7 +22,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 async def face_recognition(request: Request, file: UploadFile = File()):
     if file.size > 20_000_000:
         return PlainTextResponse('Too large image file', status_code=413)
-    print("here!")
+    print(file.size, request.client.host)
     image_file = BytesIO(await file.read())
     faces = retinaface(image_file)
     facenet_predict(res=faces, image=image_file)

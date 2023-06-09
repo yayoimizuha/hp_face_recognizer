@@ -12,7 +12,6 @@ from torch.nn import Module, Sequential, Softmax
 dev = device(device='cuda') if is_available() else device(device='cpu')
 print(f'device: {dev}')
 
-
 retinaface_model = get_model("resnet50_2020-07-20", max_size=512, device=dev)
 retinaface_model.eval()
 
@@ -71,6 +70,10 @@ facenet_model.eval()
 @no_grad()
 def facenet_predict(res: list[dict], image: BytesIO):
     image = Image.open(image)
+    if image.mode != 'RGB':
+        print(image.mode)
+        image = image.convert(mode='RGB')
+    print(image.mode)
     for order, face in enumerate(res):
         bbox, score, landmarks = face.values()
         face['pred'] = dict()

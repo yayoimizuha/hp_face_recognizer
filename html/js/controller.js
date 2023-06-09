@@ -1,17 +1,12 @@
-let _input;
-let recognition_data;
-
 function image_reflector(input) {
     console.log(input)
     if (input.files.length === 0) return 0;
     let image = new Image();
     image.src = URL.createObjectURL(input.files[0]);
-    _input = input;
-    document.getElementById("image_canvas").innerHTML = "";
-    document.getElementById("canvas_second").innerHTML = "";
+    document.getElementById("canvas_div").innerHTML = "";
     const canvas_element = document.createElement('canvas');
-    canvas_element.id = "canvas__second"
-    document.getElementById("canvas_second").appendChild(canvas_element);
+    canvas_element.id = "canvas"
+    document.getElementById("canvas_div").appendChild(canvas_element);
     send_predict(input.files[0]);
     document.getElementById("predict_content").innerText = "";
 
@@ -24,7 +19,6 @@ const send_predict = (image) => {
     fetch('/hello_image_recog', {
         method: 'POST', body: file_descriptor
     }).then(response => response.json()).then(data => {
-        recognition_data = data;
         console.log(data);
         fab_js(data, URL.createObjectURL(image));
     }).catch((error) => {
@@ -75,7 +69,7 @@ const fab_js = (data, img) => {
 
 
     console.log(disp_width, disp_height);
-    const canvas = new fabric.Canvas("canvas__second", {selection: false});
+    const canvas = new fabric.Canvas("canvas", {selection: false});
     window.addEventListener('resize', () => {
         clearTimeout(resize_timer);
         resize_timer = setTimeout(() => {
@@ -128,3 +122,17 @@ const fab_js = (data, img) => {
     }
     canvas.renderAll();
 }
+
+
+const wrong_report = () => {
+    const file_descriptor = new FormData();
+    const image = document.getElementById("image_selector").files[0];
+    file_descriptor.append('file', image);
+    fetch('/wrong_report', {
+        method: 'POST', body: file_descriptor
+    }).then(response => response.json()).then(data => {
+        console.log(data);
+    }).catch((error) => {
+        console.error(error)
+    })
+};
