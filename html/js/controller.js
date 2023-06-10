@@ -74,8 +74,11 @@ const fab_js = (data, img) => {
         canvas.renderAll(() => {
             console.log("aaaa");
         });
-        document.getElementById("canvas").style.marginLeft =
-            `${(document.getElementById('wid').clientWidth - document.getElementById("canvas").clientWidth) / 2}px`;
+        let canvas_element = document.getElementById("canvas");
+        const centering_pixel = `${(document.getElementById('wid').clientWidth - document.getElementById("canvas").clientWidth) / 2}px`;
+        canvas_element.style.marginLeft = centering_pixel;
+        canvas_element = canvas_element.nextElementSibling;
+        canvas_element.style.marginLeft = centering_pixel;
         console.log("resized!");
     }
 
