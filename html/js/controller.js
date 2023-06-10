@@ -9,7 +9,7 @@ function image_reflector(input) {
     canvas_element.classList.add('uk-align-center')
     document.getElementById("canvas_div").appendChild(canvas_element);
     send_predict(input.files[0]);
-    document.getElementById("predict_content").innerText = "";
+    document.getElementById("predict_content").innerText = "\n\n\n\n\n\n";
 
 }
 
@@ -28,7 +28,7 @@ const send_predict = (image) => {
 };
 
 function predict_view(content) {
-    document.getElementById("predict_content").innerText = "";
+    document.getElementById("predict_content").innerText = "\n\n\n\n\n\n";
     if (Object.keys(content.stat)[0] === "success") {
         for (const [k, v] of Object.entries(content)) {
             if (k === "stat") continue;
