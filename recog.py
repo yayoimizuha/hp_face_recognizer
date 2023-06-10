@@ -8,7 +8,7 @@ from torch.cuda import is_available
 from torchvision.transforms.functional import to_tensor
 from torch import stack, load, no_grad, topk, device
 from torch.nn import Module, Sequential, Softmax
-from pillow_heif import register_heif_opener
+from PIL.ImageOps import exif_transpose
 
 dev = device(device='cuda') if is_available() else device(device='cpu')
 print(f'device: {dev}')
@@ -16,7 +16,8 @@ print(f'device: {dev}')
 retinaface_model = get_model("resnet50_2020-07-20", max_size=512, device=dev)
 retinaface_model.eval()
 
-register_heif_opener()
+
+# register_heif_opener()
 
 @cache
 def class_text(x: int):
@@ -41,6 +42,7 @@ def retinaface(image_data: BytesIO):
     image_data.seek(0)
     try:
         image = Image.open(image_data)
+        image = exif_transpose(image)
 
         if image.mode != 'RGB':
             print(image.mode)
@@ -77,6 +79,7 @@ facenet_model.eval()
 @no_grad()
 def facenet_predict(res: list[dict], image: BytesIO):
     image = Image.open(image)
+    image = exif_transpose(image)
 
     if image.mode != 'RGB':
         print(image.mode)
