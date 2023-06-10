@@ -14,6 +14,7 @@ torch = "*"
 facenet-pytorch = "*"
 slowapi = "*"
 aiofiles = "*"
+pillow-heif = "*"
 
 [dev-packages]
 

@@ -8,6 +8,7 @@ from torch.cuda import is_available
 from torchvision.transforms.functional import to_tensor
 from torch import stack, load, no_grad, topk, device
 from torch.nn import Module, Sequential, Softmax
+from pillow_heif import register_heif_opener
 
 dev = device(device='cuda') if is_available() else device(device='cpu')
 print(f'device: {dev}')
@@ -15,6 +16,7 @@ print(f'device: {dev}')
 retinaface_model = get_model("resnet50_2020-07-20", max_size=512, device=dev)
 retinaface_model.eval()
 
+register_heif_opener()
 
 @cache
 def class_text(x: int):
