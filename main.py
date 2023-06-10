@@ -23,6 +23,7 @@ async def face_recognition(request: Request, file: UploadFile = File()):
     if file.size > 20_000_000:
         return PlainTextResponse('Too large image file', status_code=413)
     print(file.size, datetime.now(tz=timezone(timedelta(hours=9))), end=' ')
+    print(request.headers)
     if 'x-real-ip' in request.headers.keys():
         print(request.headers.get('x-real-ip'))
     else:
