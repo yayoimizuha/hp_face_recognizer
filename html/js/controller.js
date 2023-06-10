@@ -6,6 +6,7 @@ function image_reflector(input) {
     document.getElementById("canvas_div").innerHTML = "";
     const canvas_element = document.createElement('canvas');
     canvas_element.id = "canvas"
+    canvas_element.classList.add('uk-align-center')
     document.getElementById("canvas_div").appendChild(canvas_element);
     send_predict(input.files[0]);
     document.getElementById("predict_content").innerText = "";
@@ -70,12 +71,15 @@ const fab_js = (data, img) => {
             width: real_width, height: real_width / ratio
         });
         canvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0]);
-        canvas.renderAll();
+        canvas.renderAll(() => {
+            console.log("aaaa");
+        });
+        document.getElementById("canvas").style.marginLeft =
+            `${(document.getElementById('wid').clientWidth - document.getElementById("canvas").clientWidth) / 2}px`;
         console.log("resized!");
     }
 
 
-    console.log(disp_width, disp_height);
     const canvas = new fabric.Canvas("canvas", {selection: false});
     window.addEventListener('resize', () => {
         clearTimeout(resize_timer);
@@ -87,7 +91,7 @@ const fab_js = (data, img) => {
         canvas.setDimensions({
             width: e.width, height: e.height
         });
-        resizeCanvas(canvas, Math.min(image.naturalWidth,1000));
+        resizeCanvas(canvas, Math.min(image.naturalWidth, 1000));
         canvas.renderAll()
     });
     if (data.count === 0) {

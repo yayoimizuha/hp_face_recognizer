@@ -14,6 +14,14 @@
         #canvas-container {
             margin: auto;
         }
+
+        canvas {
+            position: absolute;
+            left: 50%;
+            margin-right: -50%;
+            top: 50%;
+            /*transform: translate(-50%, -50%);*/
+        }
     </style>
 </head>
 <body>
@@ -42,9 +50,9 @@
         <div class="uk-section uk-section-muted">
             <div class="uk-container">
                 <h3 id="wid">画像</h3>
-                <div class="uk-grid-match uk-child-width-1-1@s uk-align-center" uk-grid>
+                <div class="uk-grid-match uk-child-width-1-1@s" uk-grid>
                     <div id="canvas_div">
-                        <canvas id="canvas" style="margin: 0 auto"></canvas>
+                        <canvas id="canvas"></canvas>
                     </div>
                 </div>
                 <h2 id="predict_content">
