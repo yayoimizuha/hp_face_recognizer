@@ -38,6 +38,13 @@ function predict_view(content) {
     } else if (Object.keys(content.stat)[0] === "invalid") {
         document.getElementById("predict_content").innerText = content.stat.invalid;
     }
+    //const pos = document.getElementById("wid");
+    //const targetRect = pos.getBoundingClientRect();
+    //const targetTop = targetRect.top + window.scrollY;
+    //window.scrollTo({
+    //    top: targetTop,
+    //    behavior: "auto"
+    //})
 }
 
 let resize_timer;
@@ -73,14 +80,14 @@ const fab_js = (data, img) => {
     window.addEventListener('resize', () => {
         clearTimeout(resize_timer);
         resize_timer = setTimeout(() => {
-            resizeCanvas(canvas, image.naturalWidth);
+            resizeCanvas(canvas, Math.min(image.naturalWidth, 1000));
         }, 100);
     });
     canvas.setBackgroundImage(img, (e) => {
         canvas.setDimensions({
             width: e.width, height: e.height
         });
-        resizeCanvas(canvas, image.naturalWidth);
+        resizeCanvas(canvas, Math.min(image.naturalWidth,1000));
         canvas.renderAll()
     });
     if (data.count === 0) {
