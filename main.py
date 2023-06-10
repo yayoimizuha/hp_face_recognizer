@@ -33,7 +33,7 @@ async def face_recognition(request: Request, file: UploadFile = File()):
     makedirs(join(getcwd(), 'uploaded', 'proceed'), exist_ok=True)
     async with a_open(
             file=join(getcwd(), 'uploaded', 'proceed',
-                      f'{request.client.host}_{datetime.now().timestamp()}_{file.filename}'),
+                      f"{request.headers.get('x-real-ip')}_{datetime.now().timestamp()}_{file.filename}"),
             mode='wb') as f:
         await f.write(image_file.getbuffer())
 
@@ -49,7 +49,7 @@ async def wrong_report(request: Request, file: UploadFile = File()):
     makedirs(join(getcwd(), 'uploaded', 'wrong_images'), exist_ok=True)
     async with a_open(
             file=join(getcwd(), 'uploaded', 'wrong_images',
-                      f'{request.client.host}_{datetime.now().timestamp()}_{file.filename}'),
+                      f"{request.headers.get('x-real-ip')}_{datetime.now().timestamp()}_{file.filename}"),
             mode='wb') as f:
         await f.write(await file.read())
 
