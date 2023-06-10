@@ -39,6 +39,11 @@ def retinaface(image_data: BytesIO):
     image_data.seek(0)
     try:
         image = Image.open(image_data)
+
+        if image.mode != 'RGB':
+            print(image.mode)
+            image = image.convert(mode='RGB')
+
         image_arr = array(image)
     except Exception as e:
         print("invalid Image")
@@ -70,10 +75,11 @@ facenet_model.eval()
 @no_grad()
 def facenet_predict(res: list[dict], image: BytesIO):
     image = Image.open(image)
+
     if image.mode != 'RGB':
         print(image.mode)
         image = image.convert(mode='RGB')
-    print(image.mode)
+
     for order, face in enumerate(res):
         bbox, score, landmarks = face.values()
         face['pred'] = dict()

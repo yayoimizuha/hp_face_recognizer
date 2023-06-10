@@ -114,7 +114,8 @@ const fab_js = (data, img) => {
             canvas.on({
                 'selection:updated': (x) => {
                     predict_view(data.faces[x.selected[0].id].pred);
-                }, 'selection:created': (x) => {
+                },
+                'selection:created': (x) => {
                     predict_view(data.faces[x.selected[0].id].pred);
                 }
             })

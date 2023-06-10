@@ -7,3 +7,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - '19200:8000'
+    volumes:
+      - smb-server:/workspace/uploaded
+
+
+
+volumes:
+  smb-server:
+    driver_opts:
+      type: cifs
+      o: "username=tomokazu,password=tomo7024"
+      device: "//100.85.119.7/hdd/hp-face-recognizer"
