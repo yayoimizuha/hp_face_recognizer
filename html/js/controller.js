@@ -28,26 +28,23 @@ const send_predict = (image) => {
 };
 
 function predict_view(content) {
-    //document.getElementById("predict_content").innerText = "";
     let ranking_text = "";
+    const max_len = Math.max(...Object.entries(content).map((x) => {
+        if (x[0] !== "stat") {
+            return Object.entries(x[1])[0][0].length;
+        } else return 0;
+    }));
     if (Object.keys(content.stat)[0] === "success") {
         for (const [k, v] of Object.entries(content)) {
             if (k === "stat") continue;
             let person = Object.keys(v)[0];
             let proba = Object.values(v)[0];
-            ranking_text += `${parseInt(k) + 1}位:${person}  ${(proba * 100).toFixed(2)}%\n`;
+            ranking_text += `${parseInt(k) + 1}位:${person.padEnd(max_len + 1, "　")}${(proba * 100).toFixed(2)}%\n`;
         }
         document.getElementById("predict_content").innerText = ranking_text;
     } else if (Object.keys(content.stat)[0] === "invalid") {
         document.getElementById("predict_content").innerText = content.stat.invalid;
     }
-    //const pos = document.getElementById("wid");
-    //const targetRect = pos.getBoundingClientRect();
-    //const targetTop = targetRect.top + window.scrollY;
-    //window.scrollTo({
-    //    top: targetTop,
-    //    behavior: "auto"
-    //})
 }
 
 let resize_timer;
