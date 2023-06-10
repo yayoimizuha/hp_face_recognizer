@@ -6,7 +6,7 @@ LABEL authors="tomokazu"
 
 EXPOSE 8000
 RUN apt update && apt install libopencv-dev curl -y --no-install-recommends
-RUN pip install uvicorn["standard"] fastapi["all"] retinaface-pytorch torchvision Pillow numpy facenet-pytorch slowapi aiofiles
+RUN pip install uvicorn["standard"] fastapi["all"] retinaface-pytorch torchvision Pillow numpy facenet-pytorch slowapi aiofiles pillow-heif
 
 ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" /dev/null
 
