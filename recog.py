@@ -1,14 +1,16 @@
 from functools import cache
 from io import BytesIO
+from pprint import pprint
 from numpy import pi, sqrt
 from PIL import Image
-from numpy import asarray, array, arctan2
+from numpy import array, arctan2
 from retinaface.pre_trained_models import get_model
 from torch.cuda import is_available
 from torchvision.transforms.functional import to_tensor
-from torch import stack, load, no_grad, topk, device
+from torch import stack, load, no_grad, topk, device, mean
 from torch.nn import Module, Sequential, Softmax
 from PIL.ImageOps import exif_transpose
+from itertools import combinations_with_replacement
 
 dev = device(device='cuda') if is_available() else device(device='cpu')
 print(f'device: {dev}')
@@ -58,11 +60,6 @@ def retinaface(image_data: BytesIO):
     return res
 
 
-if __name__ == '__main__':
-    with open(file=r"C:\Users\tomokazu\Desktop\新しいフォルダー\伊勢鈴蘭=angerme-new=12741916432-2.jpg", mode='rb') as f:
-        print(retinaface(BytesIO(f.read())))
-
-
 def truncate(landmark: list[tuple[float]]) -> tuple[tuple[int, int], float]:
     left_eye, right_eye, nose, left_mouth, right_mouth = landmark
     center_x = sum((left_eye[0], right_eye[0], left_mouth[0], right_mouth[0])) / 4
@@ -92,17 +89,31 @@ def facenet_predict(res: list[dict], image: BytesIO):
         face_height = bbox[3] - bbox[1]
         trans = truncate(landmarks)
         face['rotate'] = trans[1]
-        rotated = image.rotate(angle=trans[1] * 360 / (2 * pi), center=trans[0])
         image_size = max(face_width, face_height) * sqrt(2) // 2
 
-        cropped_face = rotated.crop((trans[0][0] - image_size, trans[0][1] - image_size, trans[0][0] + image_size,
-                                     trans[0][1] + image_size)).resize(size=(224, 224))
         if image_size < 70:
             face['pred']['stat'] = {'invalid': f'face too small. {(face_height, face_width)}'}
             continue
-        cropped_tensor = to_tensor(cropped_face).unsqueeze(0)
+        cropped_list = []
+        for gap_r, gap_w, gap_h in combinations_with_replacement([-1, 0, 1], r=3):
+            gap_w, gap_h = map(lambda x: x * int(image_size / 20), (gap_w, gap_h))
+            cropped_face = image.rotate(angle=(trans[1] * 360 / (2 * pi)) + gap_r * 5, center=trans[0]).crop(
+                (trans[0][0] - image_size + gap_w, trans[0][1] - image_size + gap_h, trans[0][0] + image_size + gap_w,
+                 trans[0][1] + image_size + gap_h)).resize(size=(224, 224))
+            cropped_list.append(to_tensor(cropped_face).to(dev))
 
-        predict = topk(facenet_model(cropped_tensor.to(dev)).to(device(device='cpu')), dim=1, k=5)
-        for rank, (value, index) in enumerate(zip(predict.values[0].tolist(), predict.indices[0].tolist())):
+        pred_tensor = mean(facenet_model(stack(cropped_list)), dim=0)
+        predict = topk(pred_tensor.to(device(device='cpu')), k=5)
+        for rank, (value, index) in enumerate(zip(predict.values.tolist(), predict.indices.tolist())):
             face['pred']['stat'] = {'success': ''}
             face['pred'][rank] = {class_text(index): value}
+
+
+if __name__ == '__main__':
+    with open(file=r"C:\Users\tomokazu\Desktop\新しいフォルダー\伊勢鈴蘭=angerme-new=12785418621-3.jpg",
+              mode='rb') as f:
+        image_io = BytesIO(initial_bytes=f.read())
+    pos = retinaface(image_io)
+    pprint(pos)
+    pred = facenet_predict(pos, image_io)
+    pprint(pos)
